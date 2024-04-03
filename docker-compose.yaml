@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  db:
+    env_file:
+        - "./.env"
+    image: postgres:14-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}  
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST} 
+    ports:
+      - '9525:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./sql/init/:/docker-entrypoint-initdb.d/
+    networks:
+        - server
+  app:
+    env_file:
+      - "./.env"
+    image: advertising
+    container_name: app
+    build: .
+    ports: 
+      - 9528:8080 
+    restart: on-failure
+    depends_on:
+      - db    
+    networks:
+      - server
+  redis:
+    container_name: redis
+    image: redis
+    # Specify the redis.conf file to use and add a password.
+    command: /usr/local/etc/redis/redis.conf
+    # command: /usr/local/etc/redis/redis.conf --requirepass mypassword
+    ports: 
+      - "6379:6379"
+    # map the volumes to that redis has the custom conf file from this project.
+    volumes: 
+      - /redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - server
+volumes:
+  db:  
+  app:
+  redis:
+networks:
+  server:
+ 

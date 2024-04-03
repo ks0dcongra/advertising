@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS ads cascade;
+
+DROP SCHEMA IF EXISTS adcertising CASCADE;
