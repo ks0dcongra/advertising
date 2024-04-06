@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS advertising.ads (
     gender VARCHAR(16)[] DEFAULT '{}',
     country VARCHAR(256)[] DEFAULT '{}',
     platform VARCHAR(256)[] DEFAULT '{}',
-    updated_at TIMESTAMP DEFAULT current_timestamp,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp,
     CONSTRAINT wallet_a_id_pkey PRIMARY KEY (aid)
 );
+
+CREATE INDEX idx_start_end ON advertising.ads (start_at, end_at);
