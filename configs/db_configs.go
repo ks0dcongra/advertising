@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-
 var DbConn *gorm.DB
 
 type dbConfig struct {
@@ -42,7 +41,7 @@ func DBsetup() error {
 		Cfg.DB.SSLMode,
 	)
 
-	DbConn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	DbConn, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {

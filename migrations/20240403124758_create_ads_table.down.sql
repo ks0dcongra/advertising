@@ -1,3 +1,3 @@
-DROP TABLE IF EXISTS ads cascade;
+DROP TABLE IF EXISTS advertising.ads cascade;
 
-DROP SCHEMA IF EXISTS adcertising CASCADE;
+DROP SCHEMA IF EXISTS advertising CASCADE;

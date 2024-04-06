@@ -1,44 +1,65 @@
 package repositories
 
+import (
+	"advertising/models"
+	"advertising/models/requests"
+	"errors"
+	"time"
+
+	"gorm.io/gorm"
+)
+
 type AdRepositoryInterface interface {
+	CreateAd(adsModel *models.Ads) error
+	GetAds(items []string, requestData *requests.ConditionInfoOfPage, query string, args ...interface{}) ([]models.Ads, error)
+	GetActiveAds(nowDateTime time.Time) (int64, error)
+	GetTodayCreateAds(nowDate time.Time, nextDate time.Time) (int64, error)
 }
 
 type AdRepository struct {
+	db *gorm.DB
 }
 
-func NewAdRepository() *AdRepository {
-	return &AdRepository{}
+func NewAdRepository(db *gorm.DB) AdRepositoryInterface {
+	return &AdRepository{db}
 }
 
-// // Create User
-// func (h *UserRepository) Create(data *model.Student) (id int, result *gorm.DB) {
-// 	student := model.Student{
-// 		Name:           data.Name,
-// 		Password:       data.Password,
-// 		Student_number: data.Student_number,
-// 		CreatedTime:    time.Now(),
-// 		UpdatedTime:    time.Now()}
-// 	result = database.DB.Create(&student)
-// 	return student.Id, result
-// }
+func (a *AdRepository) CreateAd(adsModel *models.Ads) error {
+	result := a.db.Create(&adsModel)
+	return result.Error
+}
 
-// // score search
-// func (h *UserRepository) ScoreSearch(requestData string) (studentInterface []interface{}) {
-// 	// 宣告student格式給rows的搜尋結果套用
-// 	student := model.Student{}
-// 	studentSearch := model.SearchStudent{}
-// 	// 將三張資料表join起來，去搜尋是否有id=requestData的人，並拿出指定欄位
-// 	rows, err := database.DB.Model(&student).Select("scores.score,students.name,courses.subject").
-// 		Joins("left join scores on students.id = scores.student_id").
-// 		Joins("left join courses on courses.id = scores.course_id").Where("students.id = ?", requestData).Rows()
-// 	// 如果rows沒找到就不循覽結果直接回傳空interface，如果rows找到就去尋覽結果並傳到新的studentInterface
-// 	if err == nil {
-// 		for rows.Next() {
-// 			database.DB.ScanRows(rows, &studentSearch)
-// 			studentInterface = append(studentInterface, studentSearch)
-// 		}
-// 	}
-// 	// 資料庫最後再關閉
-// 	defer rows.Close()
-// 	return studentInterface
-// }
+func (a *AdRepository) GetAds(items []string, requestData *requests.ConditionInfoOfPage, query string, args ...interface{}) ([]models.Ads, error) {
+	ads := make([]models.Ads, 0)
+
+	results := a.db.Select(items).Where(query, args...).Order("end_at ASC").Limit(requestData.AdLimit).Offset(requestData.AdOffset).Debug().Find(&ads)
+	if results.Error != nil {
+		return nil, results.Error
+	}
+	if results.RowsAffected == 0 {
+		return nil, errors.New("result not found")
+	}
+
+	return ads, nil
+}
+
+func (a *AdRepository) GetActiveAds(nowDateTime time.Time) (int64, error) {
+	var count int64
+	result := a.db.Model(&models.Ads{}).Where("start_at <= ? AND end_at >= ?", nowDateTime,nowDateTime).Count(&count)
+    if result.Error != nil {
+        return count, result.Error
+    }
+
+	return count, nil
+}
+
+func (a *AdRepository) GetTodayCreateAds(nowDate time.Time, nextDate time.Time) (int64, error) {
+	var count int64
+	result := a.db.Model(&models.Ads{}).Where("updated_at >= ? AND updated_at < ?", nowDate, nextDate).Count(&count)
+    if result.Error != nil {
+        return count, result.Error
+    }
+
+	return count, nil
+}
+

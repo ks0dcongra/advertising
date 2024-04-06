@@ -1,22 +1,32 @@
 package configs
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // add some function to get env setting
 type config struct {
-	DB *dbConfig
+	DB    *dbConfig
+	Redis *redisConfig
 }
 
 var (
 	Cfg config
+
 	ServiceInfo *commonConfig
 )
 
-func InitConfigs() (error){
+func InitConfigs() error {
 
 	var err error
 
-	Cfg.DB , err = getDBConfig()
+	Cfg.DB, err = getDBConfig()
+	if err != nil {
+		fmt.Println("initialize the DB configuration failure")
+		return err
+	}
+
+	Cfg.Redis, err = getRedisConfig()
 	if err != nil {
 		fmt.Println("initialize the DB configuration failure")
 		return err

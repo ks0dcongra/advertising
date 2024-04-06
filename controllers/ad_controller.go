@@ -1,7 +1,15 @@
 package controllers
 
 import (
+	"advertising/define"
+	"advertising/models/requests"
+	"advertising/models/responses"
 	"advertising/services"
+	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type AdController struct {
@@ -14,48 +22,59 @@ func NewAdController() *AdController {
 	}
 }
 
-// Create User
-// func (h *UserController) CreateUser() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		requestData := new(model.Student)
-// 		if err := c.ShouldBindJSON(&requestData); err != nil {
-// 			fmt.Println("Error:" + err.Error())
-// 			c.JSON(http.StatusNotAcceptable, responses.Status(responses.ParameterErr, nil))
-// 			return
-// 		}
-// 		student_id, status := service.NewUserService().CreateUser(requestData)
-// 		if status != responses.Success {
-// 			c.JSON(http.StatusNotFound, responses.Status(responses.Error, nil))
-// 			return
-// 		}
-// 		c.JSON(http.StatusOK, responses.Status(responses.Success, student_id))
-// 	}
-// }
+func (a *AdController) CreateAd() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		requestData := new(requests.CreateAd)
 
-// // ScoreSearch
-// func (h *UserController) ScoreSearch() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		requestData := c.Param("id")
-// 		if requestData == "0" || requestData == "" {
-// 			c.JSON(http.StatusOK, responses.Status(responses.ParameterErr, nil))
-// 			return
-// 		}
+		if err := c.ShouldBindJSON(&requestData); err != nil {
+			log.Println("Error:" + err.Error())
+			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
+			return
+		}
+		status := services.NewAdService().CreateAd(requestData)
 
-// 		// 創建 JwtFactory 實例
-// 		JwtFactory := token.Newjwt()
-// 		// [Token用]:先將uint轉換成int再運用strconv轉換成string。
-// 		user_id, err := JwtFactory.ExtractTokenID(c)
-// 		// [Token用]:Token出錯了!
-// 		if err != nil {
-// 			c.JSON(http.StatusBadRequest, responses.Status(responses.TokenErr, nil))
-// 		}
+		c.JSON(http.StatusBadRequest, responses.Status(status, nil))
+	}
+}
 
-// 		student, status := service.NewUserService().ScoreSearch(requestData, user_id)
+// ScoreSearch
+func (a *AdController) GetAd() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Set offset default is 0, if get enpty string
+		adOffset, err := strconv.Atoi(c.Query("offset"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
+			return
+		}
 
-// 		if status == responses.SuccessDb || status == responses.SuccessRedis {
-// 			c.JSON(http.StatusOK, responses.Status(status, student))
-// 		} else {
-// 			c.JSON(http.StatusNotFound, responses.Status(status, student))
-// 		}
-// 	}
-// }
+		adLimit, err := strconv.Atoi(c.Query("limit"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
+			return
+		}
+
+		// Valid age that must be a number
+		age, err := strconv.Atoi(c.Query("age"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
+			return
+		}
+
+		requestData := &requests.ConditionInfoOfPage{
+			AdOffset: adOffset,
+			AdLimit:  adLimit,
+			Age:      age,
+			Gender:   c.Query("gender"),
+			Country:  c.Query("country"),
+			Platform: c.Query("platform"),
+		}
+
+		ads, status := services.NewAdService().GetAd(requestData)
+		if status == define.Success || status == define.RedisSuccess {
+			c.JSON(http.StatusOK, responses.Status(status, ads))
+			return
+		}
+
+		c.JSON(http.StatusBadRequest, responses.Status(status, nil))
+	}
+}
