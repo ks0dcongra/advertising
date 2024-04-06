@@ -1,0 +1,84 @@
+FORMAT: 1A
+HOST: https://localhost:8080
+
+# Advertising
+
+A simplified advertising service.
+
+## User [/user/{id}{?query1,query2}]
+
+
+## Advertising system [/api/v1/ad{?offset,limit,age,gender,country,platform}]
+
+### Public API [GET]
+
+List advertisments.
+
++ Parameters
+    + offset - (number, optional) - The offset of the results.
+    + limit - (number, optional) - The maximum number of results to return.
+    + age - (number, optional) - The age range of the target ads.
+    + gender - (string, optional) - The gender of the target ads (e.g.,'M').
+    + country - (string, optional) - The country code of the target ads (e.g., 'TW').
+    + platform - (string, optional) - The platform of the target ads (e.g., 'ios').
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "status": "0",
+                "data": [
+                    {
+                        "AID": 1,
+                        "Title": "AD 55",
+                        "EndAt": "2024-12-31T16:00:00Z"
+                    },
+                    {
+                        "AID": 2,
+                        "Title": "AD 55",
+                        "EndAt": "2024-12-31T16:00:00Z"
+                    }
+                ],
+                "message": "Success"
+            }
+            
+### Admin API [POST]
+
+Create advertisement.
+
++ Attributes
+    + title: (string, required) - The title of the advertisement.
+    + startAt: (string, required) - The start datatime of the advertisement in RFC333 format.
+    + endAt: (string, required) - The end datatime of the advertisement in RFC333 format.
+    + conditions (object)
+        + ageEnd: (number, required) - The maximum age of the target audience.
+        + gender: (array, required) - The gender of the target ads (e.g., ['M', 'F']).
+        + country: (array, required) - The country code of the target ads (e.g., ['TW', 'JP']).
+        + platform: (array, required) - The platform(s) of the target ads (e.g., ["android", "ios"]).
+
++ Request (application/json)
+    + Body
+
+            {
+                "title": "AD 55",
+                "startAt": "2023-12-10T03:00:00.000Z",
+                "endAt": "2023-12-31T16:00:00.000Z",
+                "conditions": [
+                    {
+                        "ageStart": 20,
+                        "ageEnd": 30,
+                        "gender": ["F"],
+                        "country": ["TW", "JP"],
+                        "platform": ["android", "ios"]
+                    }
+                ]
+            }
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "status": "0",
+                "data": null,
+                "message": "Success"
+            }
