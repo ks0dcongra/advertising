@@ -7,9 +7,7 @@ import (
 	"advertising/models/requests"
 	"advertising/models/responses"
 	"advertising/repositories"
-	"advertising/repositories/redis"
 	"encoding/json"
-	"fmt"
 
 	"regexp"
 	"strings"
@@ -93,11 +91,11 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 	if len(requestData.Conditions[0].Country) != 0 {
 		countryStr := strings.Join(requestData.Conditions[0].Country, ",")
 		// Valid country whether the string consists of two letters connected
-		
+
 		if match, err := regexp.MatchString(`[A-Z]{2},?\s?`, countryStr); !match || err != nil {
 			return define.RegexParsedError
 		}
-		
+
 		adsModel.Country = requestData.Conditions[0].Country
 	}
 
@@ -153,40 +151,26 @@ func (a *AdService) GetAd(requestData *requests.ConditionInfoOfPage) ([]response
 		requestData.AdLimit = 5
 	}
 
-	redisKey := fmt.Sprintf("{Age:%d,Gender:%s,Country:%s,Platform:%s,AdOffset:%d,AdLimit:%d}", requestData.Age, requestData.Gender, requestData.Country, requestData.Platform, requestData.AdOffset, requestData.AdLimit)
-
 	var responseData []responses.AdsInfo
-	// 如果抓取redis的過程有error,就去用postgres撈取資料並設置redis
-	redisGetResult, err := redis.NewRedisRepositoryImpl().Get(define.AdsConditionPrefix + redisKey)
+
+	// Dependency injection db connection
+	db := configs.DbConn
+	items := []string{"aid", "title", "end_at"}
+	ads, err := repositories.NewAdRepository(db).GetAds(items, requestData, query, args...)
 	if err != nil {
-		// Dependency injection db connection
-		db := configs.DbConn
-		items := []string{"aid", "title", "end_at"}
-		ads, err := repositories.NewAdRepository(db).GetAds(items, requestData, query, args...)
-		if err != nil {
-			return nil, define.DbErr
-		}
-
-		adsBytes, err := json.Marshal(ads)
-		if err != nil {
-			return nil, define.JsonMarshalError
-		}
-
-		err = json.Unmarshal(adsBytes, &responseData)
-		if err != nil {
-			return nil, define.JsonUnmarshalError
-		}
-
-		err = redis.NewRedisRepositoryImpl().Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Minute*10)
-		if err != nil {
-			return nil, define.RedisErr
-		}
-		return responseData, define.Success
+		return nil, define.DbErr
 	}
 
-	err = json.Unmarshal(redisGetResult, &responseData)
+	// Use marshal and unmarshal to choose partial column in return db result
+	adsBytes, err := json.Marshal(ads)
+	if err != nil {
+		return nil, define.JsonMarshalError
+	}
+
+	err = json.Unmarshal(adsBytes, &responseData)
 	if err != nil {
 		return nil, define.JsonUnmarshalError
 	}
-	return responseData, define.RedisSuccess
+
+	return responseData, define.Success
 }

@@ -34,10 +34,6 @@ func main() {
 		log.Fatalf("Connect to PostgreSQL failed: %v", err)
 	}
 
-	if err := configs.RedisSetup(); err != nil {
-		log.Fatalf("Connect to Redis failed: %v", err)
-	}
-
 	mainServer := gin.New()
 
 	// 定義router呼叫格式與跨域限制

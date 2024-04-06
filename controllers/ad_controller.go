@@ -70,11 +70,11 @@ func (a *AdController) GetAd() gin.HandlerFunc {
 		}
 
 		ads, status := services.NewAdService().GetAd(requestData)
-		if status == define.Success || status == define.RedisSuccess {
-			c.JSON(http.StatusOK, responses.Status(status, ads))
+		if status != define.Success  {
+			c.JSON(http.StatusBadRequest, responses.Status(status, nil))		
 			return
 		}
 
-		c.JSON(http.StatusBadRequest, responses.Status(status, nil))
+		c.JSON(http.StatusOK, responses.Status(status, ads))
 	}
 }

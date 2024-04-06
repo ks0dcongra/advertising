@@ -37,27 +37,8 @@ services:
       - db    
     networks:
       - server
-  redis:
-    env_file:
-      - "./.env"
-    image : redis:7.0.4-alpine
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-    ports: 
-      - 6379:6379 
-    volumes:
-      - redis:/var/lib/redis/data
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart : on-failure
-    networks:
-      - server
 volumes:
   db:  
-  redis:
 networks:
   server:
  
