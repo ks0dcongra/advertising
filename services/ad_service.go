@@ -7,7 +7,9 @@ import (
 	"advertising/models/requests"
 	"advertising/models/responses"
 	"advertising/repositories"
+	"advertising/repositories/redis"
 	"encoding/json"
+	"fmt"
 
 	"regexp"
 	"strings"
@@ -151,26 +153,44 @@ func (a *AdService) GetAd(requestData *requests.ConditionInfoOfPage) ([]response
 		requestData.AdLimit = 5
 	}
 
+	redisKey := fmt.Sprintf("{Age:%d,Gender:%s,Country:%s,Platform:%s,AdOffset:%d,AdLimit:%d}", requestData.Age, requestData.Gender, requestData.Country, requestData.Platform, requestData.AdOffset, requestData.AdLimit)
+
 	var responseData []responses.AdsInfo
-
-	// Dependency injection db connection
-	db := configs.DbConn
-	items := []string{"aid", "title", "end_at"}
-	ads, err := repositories.NewAdRepository(db).GetAds(items, requestData, query, args...)
+	// 如果抓取redis的過程有error,就去用postgres撈取資料並設置redis
+	redisGetResult, err := redis.NewRedisRepositoryImpl().Get(define.AdsConditionPrefix + redisKey)
 	if err != nil {
-		return nil, define.DbErr
+		// Dependency injection db connection
+		db := configs.DbConn
+		items := []string{"aid", "title", "end_at"}
+		ads, err := repositories.NewAdRepository(db).GetAds(items, requestData, query, args...)
+		if err != nil {
+			return nil, define.DbErr
+		}
+
+		/* 
+		Use marshal and unmarshal to choose partial column in return db result
+		*/
+		adsBytes, err := json.Marshal(ads)
+		if err != nil {
+			return nil, define.JsonMarshalError
+		}
+		err = json.Unmarshal(adsBytes, &responseData)
+		if err != nil {
+			return nil, define.JsonUnmarshalError
+		}
+
+		// Store db result of adsBytes in redis
+		err = redis.NewRedisRepositoryImpl().Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Second*2)
+		if err != nil {
+			return nil, define.RedisErr
+		}
+
+		return responseData, define.Success
 	}
 
-	// Use marshal and unmarshal to choose partial column in return db result
-	adsBytes, err := json.Marshal(ads)
-	if err != nil {
-		return nil, define.JsonMarshalError
-	}
-
-	err = json.Unmarshal(adsBytes, &responseData)
+	err = json.Unmarshal(redisGetResult, &responseData)
 	if err != nil {
 		return nil, define.JsonUnmarshalError
 	}
-
-	return responseData, define.Success
+	return responseData, define.RedisSuccess
 }
