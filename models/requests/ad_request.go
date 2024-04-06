@@ -20,6 +20,6 @@ type ConditionInfoOfPage struct {
 	Gender   string `json:"gender" binding:"lte=16"`
 	Country  string `json:"country" binding:lte=256"`
 	Platform string `json:"platform" binding:"lte=256"`
-	AdOffset int    `json:"offset" binding:"required,lte=8"`
-	AdLimit  int    `json:"limit" binding:"required,lte=8"`
+	AdOffset int    `json:"offset" binding:"lte=3"`
+	AdLimit  int    `json:"limit" binding:"lte=3"`
 }

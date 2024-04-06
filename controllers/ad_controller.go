@@ -40,24 +40,33 @@ func (a *AdController) CreateAd() gin.HandlerFunc {
 // ScoreSearch
 func (a *AdController) GetAd() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Set offset default is 0, if get enpty string
+		/*
+			1. Valid offset,limit, age that must be a number
+		 	2. if get enpty string in int datatype column, set them to `0` 
+		*/
 		adOffset, err := strconv.Atoi(c.Query("offset"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
-			return
+			if adOffset != 0 {
+				c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
+				return
+			}
 		}
 
+	
 		adLimit, err := strconv.Atoi(c.Query("limit"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
-			return
+			if adOffset != 0 {
+				c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
+				return
+			}
 		}
 
-		// Valid age that must be a number
 		age, err := strconv.Atoi(c.Query("age"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
-			return
+			if adOffset != 0 {
+				c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
+				return
+			}
 		}
 
 		requestData := &requests.ConditionInfoOfPage{
@@ -70,8 +79,8 @@ func (a *AdController) GetAd() gin.HandlerFunc {
 		}
 
 		ads, status := services.NewAdService().GetAd(requestData)
-		if status != define.Success  {
-			c.JSON(http.StatusBadRequest, responses.Status(status, nil))		
+		if status != define.Success {
+			c.JSON(http.StatusBadRequest, responses.Status(status, nil))
 			return
 		}
 
