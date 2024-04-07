@@ -38,7 +38,7 @@ func (a *AdController) CreateAd() gin.HandlerFunc {
 }
 
 // ScoreSearch
-func (a *AdController) GetAd() gin.HandlerFunc {
+func (a *AdController) GetAds() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		/*
 			1. Valid offset,limit, age that must be a number
@@ -78,7 +78,7 @@ func (a *AdController) GetAd() gin.HandlerFunc {
 			Platform: c.Query("platform"),
 		}
 
-		ads, status := services.NewAdService().GetAd(requestData)
+		ads, status := services.NewAdService().GetAds(requestData)
 
 		if status == define.Success || status == define.RedisSuccess {
 			c.JSON(http.StatusOK, responses.Status(status, ads))

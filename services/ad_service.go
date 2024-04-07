@@ -18,7 +18,7 @@ import (
 
 type AdServiceInterface interface {
 	CreateAd(requestData *requests.CreateAd) string
-	GetAd(requestData *requests.ConditionInfoOfPage) ([]responses.AdsInfo, string)
+	GetAds(requestData *requests.ConditionInfoOfPage) ([]responses.AdsInfo, string)
 }
 
 type AdService struct {
@@ -123,7 +123,7 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 	return define.Success
 }
 
-func (a *AdService) GetAd(requestData *requests.ConditionInfoOfPage) ([]responses.AdsInfo, string) {
+func (a *AdService) GetAds(requestData *requests.ConditionInfoOfPage) ([]responses.AdsInfo, string) {
 	nowDateTime := time.Now().UTC()
 	query := "start_at <= ? AND end_at >= ?"
 	args := []interface{}{nowDateTime, nowDateTime}
