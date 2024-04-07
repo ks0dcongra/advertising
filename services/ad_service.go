@@ -46,7 +46,7 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 		return define.DbErr
 	}
 	if count >= 1000 {
-		return define.AdLimitExceeded
+		return define.AdAmountExceeded
 	}
 
 	count, err = repositories.NewAdRepository(db).GetTodayCreateAds(nowDate, nextDate)
@@ -55,7 +55,7 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 	}
 
 	if count >= 3000 {
-		return define.AdLimitExceeded
+		return define.AdAmountExceeded
 	}
 
 	// Check request's time

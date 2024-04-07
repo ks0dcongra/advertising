@@ -11,5 +11,5 @@ var MsgText = map[string]string{
 	JsonMarshalError:   "JSON marshal failed",
 	JsonUnmarshalError: "JSON unmarshal failed",
 	RedisSuccess:       "Success from redis",
-	AdLimitExceeded:    "Amount of ads already reached maximum",
+	AdAmountExceeded:    "Amount of ads already reached maximum",
 }

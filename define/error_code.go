@@ -11,5 +11,5 @@ const (
 	JsonMarshalError   = "7"
 	JsonUnmarshalError = "8"
 	RedisSuccess       = "9"
-	AdLimitExceeded    = "10"
+	AdAmountExceeded    = "10"
 )
