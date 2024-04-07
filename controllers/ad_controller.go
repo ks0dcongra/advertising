@@ -31,7 +31,7 @@ func (a *AdController) CreateAd() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, responses.Status(define.ParameterErr, nil))
 			return
 		}
-		status := services.NewAdService().CreateAd(requestData)
+		status := a.AdService.CreateAd(requestData)
 
 		c.JSON(http.StatusBadRequest, responses.Status(status, nil))
 	}
@@ -78,7 +78,7 @@ func (a *AdController) GetAds() gin.HandlerFunc {
 			Platform: c.Query("platform"),
 		}
 
-		ads, status := services.NewAdService().GetAds(requestData)
+		ads, status := a.AdService.GetAds(requestData)
 
 		if status == define.Success || status == define.RedisSuccess {
 			c.JSON(http.StatusOK, responses.Status(status, ads))

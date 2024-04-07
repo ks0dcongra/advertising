@@ -18,7 +18,7 @@ type RedisRepositoryImpl struct {
 	Ctx    context.Context
 }
 
-func NewRedisRepositoryImpl() RedisRepository {
+func NewRedisRepository() RedisRepository {
 	return &RedisRepositoryImpl{
 		Client: configs.RedisConn,
 		Ctx:    context.Background(),

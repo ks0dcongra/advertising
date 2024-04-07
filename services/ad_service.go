@@ -39,9 +39,8 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 		return define.TimeParsedError
 	}
 	nextDate := nowDate.Add(24 * time.Hour)
-	// Dependency injection db connection
-	db := configs.DbConn
-	count, err := repositories.NewAdRepository(db).GetActiveAds(nowDateTime)
+	
+	count, err := a.AdRepository.GetActiveAds(nowDateTime)
 	if err != nil {
 		return define.DbErr
 	}
@@ -49,7 +48,7 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 		return define.AdAmountExceeded
 	}
 
-	count, err = repositories.NewAdRepository(db).GetTodayCreateAds(nowDate, nextDate)
+	count, err = a.AdRepository.GetTodayCreateAds(nowDate, nextDate)
 	if err != nil {
 		return define.DbErr
 	}
@@ -84,29 +83,33 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 	if len(requestData.Conditions[0].Gender) != 0 {
 		genderStr := strings.Join(requestData.Conditions[0].Gender, ",")
 		// Valid gender whether the string consists of one letters
-		if match, err := regexp.MatchString(`[A-Z]{1},?\s?`, genderStr); !match || err != nil {
+		match, err := regexp.MatchString(`^[A-Z](,[A-Z])*?$`, genderStr)
+		if  !match  || err != nil{
 			return define.RegexParsedError
 		}
+
 		adsModel.Gender = requestData.Conditions[0].Gender
 	}
 
 	if len(requestData.Conditions[0].Country) != 0 {
 		countryStr := strings.Join(requestData.Conditions[0].Country, ",")
 		// Valid country whether the string consists of two letters connected
-
-		if match, err := regexp.MatchString(`[A-Z]{2},?\s?`, countryStr); !match || err != nil {
+		match, err := regexp.MatchString(`^[A-Z]{2}(,[A-Z]{2})*?$`, countryStr)
+		if  !match  || err != nil{
 			return define.RegexParsedError
 		}
 
 		adsModel.Country = requestData.Conditions[0].Country
 	}
-
+	
 	if len(requestData.Conditions[0].Platform) != 0 {
 		platformStr := strings.Join(requestData.Conditions[0].Platform, ",")
 		// Valid platform whether the string consists of letters
-		if match, err := regexp.MatchString(`[a-zA-Z]+,?\s?`, platformStr); !match || err != nil {
+		match, err := regexp.MatchString(`^[a-zA-Z]+(,[a-zA-Z]+)*?$`, platformStr)
+		if  !match  || err != nil{
 			return define.RegexParsedError
 		}
+
 		adsModel.Platform = requestData.Conditions[0].Platform
 	}
 
@@ -114,8 +117,7 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 	adsModel.StartAt = parsedStartAt
 	adsModel.EndAt = parsedEndAt
 
-	// Dependency injection db connection
-	err = repositories.NewAdRepository(db).CreateAd(adsModel)
+	err = a.AdRepository.CreateAd(adsModel)
 	if err != nil {
 		return define.DbErr
 	}
@@ -157,12 +159,10 @@ func (a *AdService) GetAds(requestData *requests.ConditionInfoOfPage) ([]respons
 
 	var responseData []responses.AdsInfo
 	// 如果抓取redis的過程有error,就去用postgres撈取資料並設置redis
-	redisGetResult, err := redis.NewRedisRepositoryImpl().Get(define.AdsConditionPrefix + redisKey)
+	redisGetResult, err := redis.NewRedisRepository().Get(define.AdsConditionPrefix + redisKey)
 	if err != nil {
-		// Dependency injection db connection
-		db := configs.DbConn
 		items := []string{"aid", "title", "end_at"}
-		ads, err := repositories.NewAdRepository(db).GetAds(items, requestData, query, args...)
+		ads, err := a.AdRepository.GetAds(items, requestData, query, args...)
 		if err != nil {
 			return nil, define.DbErr
 		}
@@ -180,7 +180,7 @@ func (a *AdService) GetAds(requestData *requests.ConditionInfoOfPage) ([]respons
 		}
 
 		// Store db result of adsBytes in redis
-		err = redis.NewRedisRepositoryImpl().Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Second*2)
+		err = redis.NewRedisRepository().Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Second*2)
 		if err != nil {
 			return nil, define.RedisErr
 		}
