@@ -23,12 +23,14 @@ type AdServiceInterface interface {
 
 type AdService struct {
 	AdRepository repositories.AdRepositoryInterface
+	RedisRepository redis.RedisRepositoryInterface
 }
 
 func NewAdService() AdServiceInterface {
-	db := configs.DbConn
-	adRepo := repositories.NewAdRepository(db)
-	return &AdService{adRepo}
+    db := configs.DbConn
+    adRepo := repositories.NewAdRepository(db)
+    redisRepo := redis.NewRedisRepository() 
+    return &AdService{adRepo, redisRepo}
 }
 
 func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
@@ -159,14 +161,14 @@ func (a *AdService) GetAds(requestData *requests.ConditionInfoOfPage) ([]respons
 
 	var responseData []responses.AdsInfo
 	// 如果抓取redis的過程有error,就去用postgres撈取資料並設置redis
-	redisGetResult, err := redis.NewRedisRepository().Get(define.AdsConditionPrefix + redisKey)
+	// redisGetResult, err := redis.NewRedisRepository().Get(define.AdsConditionPrefix + redisKey)
+	redisGetResult, err := a.RedisRepository.Get(define.AdsConditionPrefix + redisKey)
 	if err != nil {
 		items := []string{"aid", "title", "end_at"}
 		ads, err := a.AdRepository.GetAds(items, requestData, query, args...)
 		if err != nil {
 			return nil, define.DbErr
 		}
-
 		/* 
 		Use marshal and unmarshal to choose partial column in return db result
 		*/
@@ -180,14 +182,13 @@ func (a *AdService) GetAds(requestData *requests.ConditionInfoOfPage) ([]respons
 		}
 
 		// Store db result of adsBytes in redis
-		err = redis.NewRedisRepository().Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Second*2)
+		err = a.RedisRepository.Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Second*2)	
 		if err != nil {
 			return nil, define.RedisErr
 		}
 
 		return responseData, define.Success
 	}
-
 	err = json.Unmarshal(redisGetResult, &responseData)
 	if err != nil {
 		return nil, define.JsonUnmarshalError

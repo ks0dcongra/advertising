@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type RedisRepository interface {
+type RedisRepositoryInterface interface {
 	Set(keyName string, value []byte, expiration time.Duration) error
 	Get(keyName string) ([]byte, error)
 }
@@ -18,7 +18,7 @@ type RedisRepositoryImpl struct {
 	Ctx    context.Context
 }
 
-func NewRedisRepository() RedisRepository {
+func NewRedisRepository() RedisRepositoryInterface {
 	return &RedisRepositoryImpl{
 		Client: configs.RedisConn,
 		Ctx:    context.Background(),
