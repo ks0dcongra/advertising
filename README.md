@@ -23,7 +23,7 @@ A few things you can do on Simple advertising system:
 1. creating ads
 2. listing ads
 
-# Api Document
+# API Document
 https://advertising4.docs.apiary.io/#reference/0/advertising-system/public-api
 
 <br>
@@ -64,7 +64,7 @@ docker compose up -d
 ```
 3. Call API
 
-    refer to [API Document](#api) and call API
+    refer to [API Document](https://advertising4.docs.apiary.io/#reference/0/advertising-system/public-api) and call API
 
 
 4. Stop `Container`
