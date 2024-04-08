@@ -1,4 +1,4 @@
-<h1 align='center'><b>Simple advertising system/b></h1>
+<h1 align='center'><b>Simple advertising system</b></h1>
 Implement a simplified advertising service
 
 <br>
