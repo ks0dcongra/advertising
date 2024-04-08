@@ -10,7 +10,8 @@ Implement a simplified advertising service
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installing](#installing)
-  - [Run Server](#run-server)
+  - [Run Test](#run-test)
+  - [Run Docker](#run-docker)
 - [Design Concept](#design-concept)
 - [提供 Public API 能超過 10,000 Requests Per Second 的設計](#design-concept)
 
@@ -44,44 +45,39 @@ Make sure you already have `Docker` and `Golang`.
 
 <br/>
 
-3. Prepare your `.env` file. Please copy to `.env.example` and rename it to `.env` ,final modify `.env` to your local postgres configuration.
+## **Run Test**
+1. use go to test
+```
+go test ./...
+```
+<br/> 
+
+## **Run Docker**
+1. Prepare your `.env` file. Please copy to `.env.example` and rename it to `.env` ,final modify `.env` to your local postgres configuration.
 
 <br/>
 
-4. Open `Docker` and run `Container`
+2. Open `Docker` and run `Container`
 
 ```
 docker compose up -d
 ```
-5. Call API
+3. Call API
 
-refer to [API Document](#api) and call it
+    refer to [API Document](#api) and call API
 
 
-6. Stop `Container`
+4. Stop `Container`
 ```
 docker compose down
 ```
 
 <br/>
 
-7. Install dependencies
-```
-go mod tidy
-go mod vendor
-```
-
-<br/>
-
-8. Run Test
-```
-go test ./...
-```
-<br/>
-
 #  **Design Concept**
 1. 使用三層式架構，controller, service, repository。controller用來辨識輸入的資料有無合法，service為商業邏輯，repository負責與DB互動。
 2. 基本上都是依照貴司所提供的**API 範例**進行設計的
+3. 單元測試目前只有針對商業邏輯層(service)去撰寫
 
 # **提供 Public API 能超過 10,000 Requests Per Second 的設計** 
 1. 運用k8s與Nginx
