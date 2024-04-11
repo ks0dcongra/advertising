@@ -32,7 +32,7 @@ func (a *AdRepository) CreateAd(adsModel *models.Ads) error {
 func (a *AdRepository) GetAds(items []string, requestData *requests.ConditionInfoOfPage, query string, args ...interface{}) ([]models.Ads, error) {
 	ads := make([]models.Ads, 0)
 
-	results := a.db.Select(items).Where(query, args...).Order("end_at ASC").Limit(requestData.AdLimit).Offset(requestData.AdOffset).Debug().Find(&ads)
+	results := a.db.Select(items).Where(query, args...).Order("end_at ASC").Limit(requestData.AdLimit).Offset(requestData.AdOffset).Find(&ads)
 	if results.Error != nil {
 		return nil, results.Error
 	}
@@ -45,10 +45,10 @@ func (a *AdRepository) GetAds(items []string, requestData *requests.ConditionInf
 
 func (a *AdRepository) GetActiveAds(nowDateTime time.Time) (int64, error) {
 	var count int64
-	result := a.db.Model(&models.Ads{}).Where("start_at <= ? AND end_at >= ?", nowDateTime,nowDateTime).Count(&count)
-    if result.Error != nil {
-        return count, result.Error
-    }
+	result := a.db.Model(&models.Ads{}).Where("start_at <= ? AND end_at >= ?", nowDateTime, nowDateTime).Count(&count)
+	if result.Error != nil {
+		return count, result.Error
+	}
 
 	return count, nil
 }
@@ -56,10 +56,9 @@ func (a *AdRepository) GetActiveAds(nowDateTime time.Time) (int64, error) {
 func (a *AdRepository) GetTodayCreateAds(nowDate time.Time, nextDate time.Time) (int64, error) {
 	var count int64
 	result := a.db.Model(&models.Ads{}).Where("updated_at >= ? AND updated_at < ?", nowDate, nextDate).Count(&count)
-    if result.Error != nil {
-        return count, result.Error
-    }
+	if result.Error != nil {
+		return count, result.Error
+	}
 
 	return count, nil
 }
-
