@@ -51,10 +51,11 @@ Create advertisement.
     + startAt: (string, required) - The start datatime of the advertisement in RFC333 format.
     + endAt: (string, required) - The end datatime of the advertisement in RFC333 format.
     + conditions (object)
-        + ageEnd: (number, required) - The maximum age of the target audience.
-        + gender: (array, required) - The gender of the target ads (e.g., ['M', 'F']).
-        + country: (array, required) - The country code of the target ads (e.g., ['TW', 'JP']).
-        + platform: (array, required) - The platform(s) of the target ads (e.g., ["android", "ios"]).
+        + ageStart: (number, optional) - The minimum age of the target audience.
+        + ageEnd: (number, optional) - The maximum age of the target audience.
+        + gender: (array, optional) - The gender of the target ads (e.g., ['M', 'F']).
+        + country: (array, optional) - The country code of the target ads (e.g., ['TW', 'JP']).
+        + platform: (array, optional) - The platform(s) of the target ads (e.g., ["android", "ios"]).
 
 + Request (application/json)
     + Body
