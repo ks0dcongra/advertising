@@ -22,15 +22,15 @@ type AdServiceInterface interface {
 }
 
 type AdService struct {
-	AdRepository repositories.AdRepositoryInterface
+	AdRepository    repositories.AdRepositoryInterface
 	RedisRepository redis.RedisRepositoryInterface
 }
 
 func NewAdService() AdServiceInterface {
-    db := configs.DbConn
-    adRepo := repositories.NewAdRepository(db)
-    redisRepo := redis.NewRedisRepository() 
-    return &AdService{adRepo, redisRepo}
+	db := configs.DbConn
+	adRepo := repositories.NewAdRepository(db)
+	redisRepo := redis.NewRedisRepository()
+	return &AdService{adRepo, redisRepo}
 }
 
 func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
@@ -41,7 +41,7 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 		return define.TimeParsedError
 	}
 	nextDate := nowDate.Add(24 * time.Hour)
-	
+
 	count, err := a.AdRepository.GetActiveAds(nowDateTime)
 	if err != nil {
 		return define.DbErr
@@ -73,11 +73,11 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 	// Build SQL insert models
 	adsModel := new(models.Ads)
 
-	if requestData.Conditions[0].AgeStart != 0 {
+	if requestData.Conditions[0].AgeStart >= 1 && requestData.Conditions[0].AgeStart <= 100 {
 		adsModel.AgeStart = requestData.Conditions[0].AgeStart
 	}
 
-	if requestData.Conditions[0].AgeEnd != 0 {
+	if requestData.Conditions[0].AgeEnd >= 1 && requestData.Conditions[0].AgeEnd <= 100 {
 		adsModel.AgeEnd = requestData.Conditions[0].AgeEnd
 	}
 
@@ -86,7 +86,7 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 		genderStr := strings.Join(requestData.Conditions[0].Gender, ",")
 		// Valid gender whether the string consists of one letters
 		match, err := regexp.MatchString(`^[A-Z](,[A-Z])*?$`, genderStr)
-		if  !match  || err != nil{
+		if !match || err != nil {
 			return define.RegexParsedError
 		}
 
@@ -97,18 +97,18 @@ func (a *AdService) CreateAd(requestData *requests.CreateAd) string {
 		countryStr := strings.Join(requestData.Conditions[0].Country, ",")
 		// Valid country whether the string consists of two letters connected
 		match, err := regexp.MatchString(`^[A-Z]{2}(,[A-Z]{2})*?$`, countryStr)
-		if  !match  || err != nil{
+		if !match || err != nil {
 			return define.RegexParsedError
 		}
 
 		adsModel.Country = requestData.Conditions[0].Country
 	}
-	
+
 	if len(requestData.Conditions[0].Platform) != 0 {
 		platformStr := strings.Join(requestData.Conditions[0].Platform, ",")
 		// Valid platform whether the string consists of letters
 		match, err := regexp.MatchString(`^[a-zA-Z]+(,[a-zA-Z]+)*?$`, platformStr)
-		if  !match  || err != nil{
+		if !match || err != nil {
 			return define.RegexParsedError
 		}
 
@@ -169,8 +169,8 @@ func (a *AdService) GetAds(requestData *requests.ConditionInfoOfPage) ([]respons
 		if err != nil {
 			return nil, define.DbErr
 		}
-		/* 
-		Use marshal and unmarshal to choose partial column in return db result
+		/*
+			Use marshal and unmarshal to choose partial column in return db result
 		*/
 		adsBytes, err := json.Marshal(ads)
 		if err != nil {
@@ -182,7 +182,7 @@ func (a *AdService) GetAds(requestData *requests.ConditionInfoOfPage) ([]respons
 		}
 
 		// Store db result of adsBytes in redis
-		err = a.RedisRepository.Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Second*2)	
+		err = a.RedisRepository.Set(define.AdsConditionPrefix+redisKey, adsBytes, time.Second*2)
 		if err != nil {
 			return nil, define.RedisErr
 		}

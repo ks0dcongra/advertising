@@ -8,18 +8,18 @@ type CreateAd struct {
 }
 
 type ConditionInfo struct {
-	AgeStart int      `json:"ageStart" binding:"lte=3"`
-	AgeEnd   int      `json:"ageEnd" binding:"lte=3"`
-	Gender   []string `json:"gender" binding:"lte=16"`
-	Country  []string `json:"country" binding:lte=256"`
-	Platform []string `json:"platform" binding:"lte=256"`
+	AgeStart int      `json:"ageStart" binding:"required,gte=1,lte=100"`
+	AgeEnd   int      `json:"ageEnd" binding:"required,gte=1,lte=100"`
+	Gender   []string `json:"gender" binding:"required,lte=16"`
+	Country  []string `json:"country" binding:"required,lte=256"`
+	Platform []string `json:"platform" binding:"required,lte=256"`
 }
 
 type ConditionInfoOfPage struct {
-	Age      int    `json:"age" binding:"lte=3"`
-	Gender   string `json:"gender" binding:"lte=16"`
-	Country  string `json:"country" binding:lte=256"`
-	Platform string `json:"platform" binding:"lte=256"`
-	AdOffset int    `json:"offset" binding:"lte=3"`
-	AdLimit  int    `json:"limit" binding:"lte=3"`
+	Age      int    `form:"age" binding:"gte=0,lte=100"`
+	Gender   string `form:"gender" binding:"lte=16"`
+	Country  string `form:"country" binding:"lte=256"`
+	Platform string `form:"platform" binding:"lte=256"`
+	AdOffset int    `form:"offset" binding:"gte=0"`
+	AdLimit  int    `form:"limit" binding:"gte=0,lte=100"`
 }
