@@ -53,7 +53,7 @@ go test ./...
 <br/> 
 
 ## **Run Docker**
-1. Prepare your `.env` file. Please copy to `.env.example` and rename it to `.env` ,final modify `.env` to your local postgres configuration
+1. Prepare your `.env` file. Please copy to `.env.example` and rename it to `.env` ,final modify `.env` to your local postgres configuration (if you use pgAdmin to observe the database, you can set hostname is localhost and port is 9525 in database configuration when you register server)
 
 <br/>
 
